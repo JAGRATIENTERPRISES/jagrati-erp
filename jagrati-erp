@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jagrati Enterprises - Management System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        body { background: #f8fafc; font-family: 'Inter', sans-serif; color: #1e293b; }
+        .erp-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        input, select { border: 1px solid #cbd5e1 !important; padding: 10px; border-radius: 8px; width: 100%; font-size: 14px; transition: all 0.2s; }
+        input:focus, select:focus { border-color: #3b82f6 !important; outline: none; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
+        optgroup { font-weight: 800; color: #1e40af; background: #f1f5f9; }
+        option { font-weight: 400; color: #1e293b; background: #ffffff; }
+        .tab-btn { padding: 12px; cursor: pointer; text-align: center; font-weight: 600; color: #64748b; border-bottom: 2px solid transparent; flex: 1; }
+        .tab-active { color: #2563eb; border-bottom: 2px solid #2563eb; background: #f1f5f9; }
+        .invoice-box { background: white; border: 2px solid #000; padding: 30px; color: #000; font-family: 'Courier New', monospace; line-height: 1.4; }
+        @media print { .no-print { display: none !important; } .invoice-box { border: none; padding: 0; width: 100%; } }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <div class="max-w-7xl mx-auto">
+        <header class="erp-card p-6 mb-8 no-print">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div class="text-left">
+                    <p class="text-[10px] font-black text-blue-600 mb-1">GSTIN: 09BWHPR7582J1ZN</p>
+                    <h1 class="text-4xl font-black text-blue-900 tracking-tighter uppercase italic">Jagrati Enterprises</h1>
+                    <p class="text-slate-600 font-bold text-xs">Address: 333, Gokul Mohalla, Vill.- Jav, Teh.- Chhata, Mathura (U.P.) 281403</p>
+                </div>
+                <div class="text-right text-xs font-bold text-slate-700">
+                    <p>📞 +91 7464914953</p>
+                    <p>📧 jagratienterprises5000@gmail.com</p>
+                </div>
+            </div>
+            
+            <div class="mt-6 pt-4 border-t flex flex-wrap gap-3 justify-between items-center">
+                <div class="flex gap-2">
+                    <select id="filterMonth" onchange="renderAttendance()" class="w-32 font-bold"></select>
+                    <select id="filterYear" onchange="renderAttendance()" class="w-24 font-bold"></select>
+                </div>
+                <button onclick="exportToExcel()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded-lg font-bold text-sm shadow-md transition">Export CSV</button>
+            </div>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+            <div class="erp-card overflow-hidden lg:col-span-1 h-fit no-print">
+                <div class="flex border-b">
+                    <div id="tabAuto" onclick="switchMode('AUTO')" class="tab-btn tab-active">Auto</div>
+                    <div id="tabManual" onclick="switchMode('MANUAL')" class="tab-btn">Manual</div>
+                </div>
+                <div class="p-5 space-y-4">
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-500 uppercase">Worker Name</label>
+                        <input type="text" id="workerName" placeholder="Enter Name">
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="text-[10px] font-bold text-slate-500 uppercase">Gender</label>
+                            <select id="gender">
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-bold text-slate-500 uppercase">Shift Type</label>
+                            <select id="shiftTime">
+                                <option value="ShiftA">A (6AM-2:30PM)</option>
+                                <option value="ShiftB">B (2PM-10:30PM)</option>
+                                <option value="ShiftC">C (10PM-6:30AM)</option>
+                                <option value="Day12">Day (8AM-8PM)</option>
+                                <option value="Night12">Night (8PM-8AM)</option>
+                                <option value="General">General (9AM-6PM)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-500 uppercase">Designation</label>
+                        <select id="designation">
+                            <optgroup label="PRODUCTION">
+                                <option value="Machine Operator">Machine Operator</option>
+                                <option value="Production Supervisor">Production Supervisor</option>
+                                <option value="Helper">Helper</option>
+                            </optgroup>
+                            <optgroup label="QUALITY">
+                                <option value="Quality Inspector">Quality Inspector</option>
+                                <option value="Checker">Checker</option>
+                            </optgroup>
+                            <optgroup label="TECHNICAL / MAINTENANCE">
+                                <option value="Electrician">Electrician</option>
+                                <option value="Fitter">Fitter</option>
+                                <option value="Maintenance Engineer">Maintenance Engineer</option>
+                            </optgroup>
+                            <optgroup label="LOGISTICS">
+                                <option value="Packer">Packer</option>
+                                <option value="Loader">Loader</option>
+                                <option value="Store Keeper">Store Keeper</option>
+                            </optgroup>
+                            <optgroup label="OFFICE / ADMIN">
+                                <option value="Accountant">Accountant</option>
+                                <option value="HR Executive">HR Executive</option>
+                                <option value="Security Guard">Security Guard</option>
+                            </optgroup>
+                        </select>
+                    </div>
+
+                    <div id="manualFields" class="hidden pt-4 border-t space-y-3">
+                        <input type="date" id="manDate" class="font-bold">
+                        <div class="grid grid-cols-2 gap-2">
+                            <input type="time" id="manIn" title="In Time">
+                            <input type="time" id="manOut" title="Out Time">
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-3 p-3 bg-blue-50 border border-blue-100 rounded-lg">
+                        <input type="checkbox" id="doubleDuty" class="w-5 h-5 accent-blue-600">
+                        <label for="doubleDuty" class="text-xs font-bold text-blue-800 uppercase cursor-pointer">Double Duty (x2)</label>
+                    </div>
+
+                    <div id="autoActions" class="flex gap-2">
+                        <button onclick="processEntry('AUTO', 'IN')" class="flex-1 bg-blue-600 text-white font-bold py-3 rounded-lg shadow-sm">IN</button>
+                        <button onclick="processEntry('AUTO', 'OUT')" class="flex-1 bg-rose-600 text-white font-bold py-3 rounded-lg shadow-sm">OUT</button>
+                    </div>
+                    <button id="manualBtn" onclick="processEntry('MANUAL')" class="hidden w-full bg-slate-800 text-white font-bold py-3 rounded-lg">SAVE DATA</button>
+                </div>
+            </div>
+
+            <div class="lg:col-span-3 space-y-6">
+                <div class="erp-card p-6 border-l-8 border-blue-600 no-print">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-black text-blue-900 uppercase text-xs">Labour Rate Configuration</h3>
+                        <span id="saveStatus" class="text-[10px] font-bold text-emerald-600 hidden">✓ DATA SAVED</span>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div>
+                            <label class="text-[10px] font-black text-slate-400">SELECT WORKER</label>
+                            <select id="salaryEmployee" class="mt-1 font-bold" onchange="loadSavedRates()"></select>
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-black text-slate-400">BASIC RATE</label>
+                            <input type="number" id="basicRate" placeholder="0.00" class="mt-1">
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-black text-slate-400">VDA RATE</label>
+                            <input type="number" id="vdaRate" placeholder="0.00" class="mt-1">
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-black text-slate-400">SPL. ALLOWANCE</label>
+                            <input type="number" id="specialRate" placeholder="0.00" class="mt-1">
+                        </div>
+                    </div>
+                    <div class="mt-6 flex gap-3">
+                        <button onclick="saveSalaryOnly()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-6 rounded-lg shadow-md transition">SAVE RATES</button>
+                        <button onclick="generateInvoice()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-6 rounded-lg shadow-md transition">GENERATE PAYSLIP</button>
+                    </div>
+                </div>
+
+                <div id="invoicePreview" class="hidden erp-card p-10 invoice-box shadow-2xl relative"></div>
+
+                <div class="erp-card overflow-hidden no-print">
+                    <div class="p-4 bg-slate-50 border-b flex justify-between items-center">
+                        <h3 class="font-bold text-slate-700 uppercase text-xs">Attendance History</h3>
+                        <span id="statUnits" class="bg-blue-600 text-white px-3 py-1 rounded-full text-[10px] font-black">Total Units: 0.00</span>
+                    </div>
+                    <div class="overflow-x-auto max-h-[400px]">
+                        <table class="w-full text-left text-sm">
+                            <thead class="bg-slate-50 text-[10px] font-black text-slate-500 border-b sticky top-0">
+                                <tr>
+                                    <th class="p-4">DATE</th>
+                                    <th class="p-4">NAME & SHIFT</th>
+                                    <th class="p-4 text-center">IN-OUT</th>
+                                    <th class="p-4 text-center">UNIT</th>
+                                    <th class="p-4 text-center">ACTION</th>
+                                </tr>
+                            </thead>
+                            <tbody id="attendanceBody" class="divide-y divide-slate-100"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let logs = JSON.parse(localStorage.getItem('jagrati_erp_v16')) || [];
+        let savedRates = JSON.parse(localStorage.getItem('jagrati_rates_v16')) || {};
+        
+        const GRACE_MIN = 30;
+        const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+        const mSel = document.getElementById('filterMonth');
+        const ySel = document.getElementById('filterYear');
+        
+        months.forEach((m, i) => mSel.innerHTML += `<option value="${i}" ${i === new Date().getMonth() ? 'selected' : ''}>${m}</option>`);
+        for(let y = 2024; y <= 2026; y++) ySel.innerHTML += `<option value="${y}" ${y === new Date().getFullYear() ? 'selected' : ''}>${y}</option>`;
+
+        function switchMode(mode) {
+            document.getElementById('tabAuto').className = `tab-btn ${mode === 'AUTO' ? 'tab-active' : ''}`;
+            document.getElementById('tabManual').className = `tab-btn ${mode === 'MANUAL' ? 'tab-active' : ''}`;
+            document.getElementById('manualFields').classList.toggle('hidden', mode === 'AUTO');
+            document.getElementById('autoActions').classList.toggle('hidden', mode === 'MANUAL');
+            document.getElementById('manualBtn').classList.toggle('hidden', mode === 'AUTO');
+        }
+
+        function calculateWorkUnits(inT, outT, isDbl, shift) {
+            if(!inT || !outT || outT === '-') return 1.0; 
+            let [h1, m1] = inT.split(':').map(Number);
+            let [h2, m2] = outT.split(':').map(Number);
+            let config = { 'ShiftA': [6, 8.5], 'ShiftB': [14, 8.5], 'ShiftC': [22, 8.5], 'Day12': [8, 12], 'Night12': [20, 12], 'General': [9, 9] }[shift];
+            if (h1 === config[0] && m1 > 0 && m1 <= GRACE_MIN) m1 = 0;
+            let start = new Date(0,0,0, h1, m1);
+            let end = new Date(0,0,0, h2, m2);
+            let diff = (end - start) / (1000 * 60 * 60); if(diff < 0) diff += 24;
+            let unit = diff / config[1];
+            if (unit > 1.0 && !isDbl) unit = 1.0;
+            if (isDbl) unit = unit * 2;
+            return parseFloat(unit.toFixed(2));
+        }
+
+        function processEntry(mode, type = null) {
+            const name = document.getElementById('workerName').value.trim();
+            const gen = document.getElementById('gender').value;
+            const shift = document.getElementById('shiftTime').value;
+            const des = document.getElementById('designation').value;
+            const isDbl = document.getElementById('doubleDuty').checked;
+            if(!name) return alert("Worker Name?");
+            if(mode === 'AUTO') {
+                const now = new Date();
+                const timeStr = now.getHours().toString().padStart(2,'0') + ":" + now.getMinutes().toString().padStart(2,'0');
+                if(type === 'IN') {
+                    logs.unshift({ id: Date.now(), name, gen, shift, des, date: now.toISOString().split('T')[0], inT: timeStr, outT: '-', units: 1, m: now.getMonth(), y: now.getFullYear(), isDbl: isDbl });
+                } else {
+                    const rec = logs.find(l => l.name.toLowerCase() === name.toLowerCase() && l.outT === '-');
+                    if(rec) { rec.outT = timeStr; rec.units = calculateWorkUnits(rec.inT, timeStr, rec.isDbl, rec.shift); }
+                }
+            } else {
+                const mDate = document.getElementById('manDate').value;
+                const mIn = document.getElementById('manIn').value;
+                const mOut = document.getElementById('manOut').value;
+                logs.unshift({ id: Date.now(), name, gen, shift, des, date: mDate, inT: mIn, outT: mOut, units: calculateWorkUnits(mIn, mOut, isDbl, shift), m: new Date(mDate).getMonth(), y: new Date(mDate).getFullYear(), isDbl: isDbl });
+            }
+            saveAndRefresh();
+        }
+
+        function saveAndRefresh() {
+            localStorage.setItem('jagrati_erp_v16', JSON.stringify(logs));
+            renderAttendance();
+            document.getElementById('workerName').value = "";
+        }
+
+        function renderAttendance() {
+            const selM = parseInt(mSel.value), selY = parseInt(ySel.value);
+            const filtered = logs.filter(l => l.m === selM && l.y === selY);
+            const uniqueNames = [...new Set(filtered.map(l => l.name))];
+            document.getElementById('salaryEmployee').innerHTML = `<option value="">Select Worker</option>` + uniqueNames.map(n => `<option value="${n}">${n}</option>`).join('');
+            document.getElementById('attendanceBody').innerHTML = filtered.map(l => `<tr class="hover:bg-slate-50 transition"><td class="p-4 text-xs font-semibold">${l.date}</td><td class="p-4 font-bold text-slate-800">${l.name}<br><span class="text-[9px] text-blue-600 uppercase font-black">${l.shift} | ${l.des}</span></td><td class="p-4 text-center font-mono text-xs">${l.inT} - ${l.outT}</td><td class="p-4 text-center"><span class="bg-blue-600 text-white px-2 py-1 rounded text-[10px] font-black">${l.units}</span></td><td class="p-4 text-center"><button onclick="deleteEntry(${l.id})" class="text-rose-500 font-bold text-xs">DEL</button></td></tr>`).join('');
+            document.getElementById('statUnits').innerText = "Total Units: " + filtered.reduce((a, b) => a + b.units, 0).toFixed(2);
+        }
+
+        function saveSalaryOnly() {
+            const name = document.getElementById('salaryEmployee').value;
+            const basic = parseFloat(document.getElementById('basicRate').value) || 0;
+            const vda = parseFloat(document.getElementById('vdaRate').value) || 0;
+            const spl = parseFloat(document.getElementById('specialRate').value) || 0;
+            if(!name) return alert("Pehle worker select karein!");
+            savedRates[name] = { basic, vda, spl };
+            localStorage.setItem('jagrati_rates_v16', JSON.stringify(savedRates));
+            const status = document.getElementById('saveStatus');
+            status.classList.remove('hidden'); setTimeout(() => status.classList.add('hidden'), 2000);
+        }
+
+        function loadSavedRates() {
+            const name = document.getElementById('salaryEmployee').value;
+            if(savedRates[name]) {
+                document.getElementById('basicRate').value = savedRates[name].basic || 0;
+                document.getElementById('vdaRate').value = savedRates[name].vda || 0;
+                document.getElementById('specialRate').value = savedRates[name].special || 0;
+            } else {
+                document.getElementById('basicRate').value = ""; document.getElementById('vdaRate').value = ""; document.getElementById('specialRate').value = "";
+            }
+        }
+
+        function generateInvoice() {
+            const name = document.getElementById('salaryEmployee').value;
+            if(!name) return alert("Select Worker!");
+            saveSalaryOnly();
+            const basic = parseFloat(document.getElementById('basicRate').value) || 0;
+            const vda = parseFloat(document.getElementById('vdaRate').value) || 0;
+            const spl = parseFloat(document.getElementById('specialRate').value) || 0;
+            const filtered = logs.filter(l => l.name === name && l.m === parseInt(mSel.value) && l.y === parseInt(ySel.value));
+            const totalUnits = filtered.reduce((a, b) => a + b.units, 0);
+            const gross = ((basic + vda + spl) / 26) * totalUnits;
+            const des = filtered.length > 0 ? filtered[0].des : "Worker";
+            
+            const prev = document.getElementById('invoicePreview');
+            prev.classList.remove('hidden');
+            prev.innerHTML = `
+                <div class="flex justify-between items-start border-b-2 border-black pb-2 mb-4">
+                    <div class="text-[9px] font-bold">GSTIN: 09BWHPR7582J1ZN</div>
+                    <div class="text-[9px] font-bold text-right italic">Phone: +91 7464914953<br>Email: jagratienterprises5000@gmail.com</div>
+                </div>
+                <div class="text-center mb-6">
+                    <h2 class="text-3xl font-black uppercase italic tracking-tighter">Jagrati Enterprises</h2>
+                    <p class="text-[10px] font-bold">333, Gokul Mohalla, Vill.- Jav, Teh.- Chhata, Mathura (U.P.) 281403</p>
+                    <div class="mt-2 inline-block border-y border-black px-4 py-1 font-bold uppercase tracking-widest text-sm">
+                        Pay Slip - ${months[mSel.value]} ${ySel.value}
+                    </div>
+                </div>
+                <table class="w-full text-sm font-bold border-collapse">
+                    <tr class="border-b">
+                        <td class="py-2">EMPLOYEE NAME:</td>
+                        <td class="text-right py-2 uppercase">${name}</td>
+                    </tr>
+                    <tr class="border-b">
+                        <td class="py-2">DESIGNATION:</td>
+                        <td class="text-right py-2 uppercase">${des}</td>
+                    </tr>
+                    <tr class="border-b">
+                        <td class="py-2">TOTAL WORK UNITS:</td>
+                        <td class="text-right py-2">${totalUnits.toFixed(2)}</td>
+                    </tr>
+                    <tr>
+                        <td class="pt-4">MONTHLY RATE (BASIC+VDA+SPL):</td>
+                        <td class="text-right pt-4">₹ ${(basic+vda+spl).toFixed(2)}</td>
+                    </tr>
+                    <tr class="text-xl font-black bg-slate-100">
+                        <td class="p-3">NET SALARY PAYABLE:</td>
+                        <td class="text-right p-3 tracking-tighter">₹ ${gross.toFixed(2)}</td>
+                    </tr>
+                </table>
+                <div class="mt-16 flex justify-between items-end px-4">
+                    <div class="text-center">
+                        <div class="h-10"></div>
+                        <p class="text-[10px] border-t border-black pt-1">Worker's Signature</p>
+                    </div>
+                    <div class="text-center">
+                        <p class="text-[9px] mb-8 font-black">For JAGRATI ENTERPRISES</p>
+                        <p class="text-[10px] border-t border-black pt-1">Auth. Signatory</p>
+                    </div>
+                </div>
+            `;
+            window.scrollTo({ top: prev.offsetTop, behavior: 'smooth' });
+        }
+
+        function deleteEntry(id) { if(confirm("Delete record?")) { logs = logs.filter(l => l.id !== id); saveAndRefresh(); } }
+        function exportToExcel() {
+            let csv = "Date,Name,Shift,Designation,In,Out,Units\n";
+            logs.forEach(l => csv += `${l.date},${l.name},${l.shift},${l.des},${l.inT},${l.outT},${l.units}\n`);
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const link = document.createElement('a'); link.href = URL.createObjectURL(blob);
+            link.download = `Jagrati_Report_${months[mSel.value]}.csv`; link.click();
+        }
+        renderAttendance();
+    </script>
+</body>
+</html>
